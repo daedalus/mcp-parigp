@@ -187,11 +187,15 @@ def _convert_to_python(obj: Any) -> Any:
 
 
 @mcp.tool()
-def eval_expression(expr: str) -> Any:
+def eval_expression(expr: str, timeout: int = 60) -> Any:
     """Evaluate a PARI/GP expression string.
 
     Args:
         expr: A PARI/GP expression as a string (e.g., "x^2 + 1", "factor(100)", "prime(10)").
+            For multiple computations, ALWAYS use vector expressions like "vector(15, n, qfbclassno(-4*n))"
+            instead of for-loops with print statements. For-loops may cause timeouts.
+        timeout: Maximum execution time in seconds (default 60). Note: This is a best-effort timeout
+            and may not work reliably for long-running PARI operations written in C.
 
     Returns:
         The result of the evaluation converted to Python types.
@@ -201,9 +205,40 @@ def eval_expression(expr: str) -> Any:
         [[2, 2], [5, 2]]
         >>> eval_expression("prime(10)")
         29
+        >>> eval_expression("vector(15, n, qfbclassno(-4*n))")
+        [1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 2, 4, 1, 2]
     """
+    import signal
+    from typing import Any
+
+    class TimeoutError(Exception):
+        pass
+
+    def timeout_handler(signum: int, frame: Any) -> Any:  # type: ignore[arg-type]
+        raise TimeoutError(f"Expression evaluation timed out after {timeout} seconds")
+
     pari = _get_pari()
-    result = pari(expr)
+    result = None
+    timeout_error: list[Exception | None] = [None]
+
+    def evaluate() -> None:
+        nonlocal result
+        try:
+            result = pari(expr)
+        except Exception as e:
+            timeout_error[0] = e
+
+    import threading
+
+    thread = threading.Thread(target=evaluate)
+    thread.daemon = True
+    thread.start()
+    thread.join(timeout)
+    if thread.is_alive():
+        raise TimeoutError(f"Expression evaluation timed out after {timeout} seconds")
+    if timeout_error[0]:
+        raise timeout_error[0]
+
     return _convert_to_python(result)
 
 
@@ -539,6 +574,8 @@ def sigma(n: int, k: int = 1) -> int:
         18
         >>> sigma(10, 2)
         130
+        >>> eval_expression("vector(10, n, sigma(n))")
+        [1, 3, 4, 7, 6, 12, 8, 15, 13, 18]
     """
     pari = _get_pari()
     return int(pari.sigma(n, k))
@@ -563,6 +600,8 @@ def moebius(n: int) -> int:
         -1
         >>> moebius(12)
         0
+        >>> eval_expression("vector(15, n, moebius(n))")
+        [0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1]
     """
     pari = _get_pari()
     return int(pari.moebius(n))
@@ -694,6 +733,8 @@ def fibonacci(n: int) -> int:
     Example:
         >>> fibonacci(10)
         55
+        >>> eval_expression("vector(10, n, fibonacci(n))")
+        [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
     """
     pari = _get_pari()
     return int(pari.fibonacci(n))
@@ -712,6 +753,8 @@ def lucas(n: int) -> int:
     Example:
         >>> lucas(10)
         123
+        >>> eval_expression("vector(10, n, lucas(n))")
+        [2, 1, 3, 4, 7, 11, 18, 29, 47, 76]
     """
     pari = _get_pari()
     # Lucas numbers: L_n = F_{n-1} + F_{n+1}
@@ -2532,8 +2575,10 @@ def qfbclassno(D: int, flags: int = 0) -> int:
         Class number.
 
     Example:
-        >>> qfbclassno(-3)
+        >>> qfbclassno(5)
         1
+        >>> eval_expression("vector(15, n, qfbclassno(-4*n))")
+        [1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 2, 4, 1, 2]
     """
     pari = _get_pari()
     return int(pari.qfbclassno(D, flags))
