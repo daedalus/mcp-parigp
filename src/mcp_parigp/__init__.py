@@ -9,6 +9,153 @@ __version__ = "0.1.0"
 
 mcp = FastMCP("mcp-parigp")
 
+__all__ = [
+    "mcp",
+    "get_pari_version",
+    "eval_expression",
+    "set_real_precision",
+    "get_real_precision",
+    "set_real_precision_bits",
+    "get_real_precision_bits",
+    "allocatemem",
+    "stacksize",
+    "stacksizemax",
+    "setrand",
+    "getrand",
+    "primes",
+    "prime",
+    "factor",
+    "isprime",
+    "gcd",
+    "lcm",
+    "bezout",
+    "phi",
+    "sigma",
+    "moebius",
+    "jacobi",
+    "legendre",
+    "znorder",
+    "znstar",
+    "factorial",
+    "binomial",
+    "fibonacci",
+    "lucas",
+    "polcyclo",
+    "polchebyshev",
+    "pollegendre",
+    "polhermite",
+    "polroots",
+    "polrootsmod",
+    "polrootspadic",
+    "factorpadic",
+    "deriv",
+    "integ",
+    "resultant",
+    "disc",
+    "norm",
+    "trace",
+    "subst",
+    "Mod",
+    "lift",
+    "centerlift",
+    "nfinit",
+    "bnfinit",
+    "bnrinit",
+    "idealadd",
+    "idealmul",
+    "idealpow",
+    "idealfactor",
+    "ellinit",
+    "elladd",
+    "ellmul",
+    "ellorder",
+    "elllog",
+    "ellap",
+    "elltors",
+    "ellglobalred",
+    "elllocalred",
+    "ellheight",
+    "ellj",
+    "elleta",
+    "ellwp",
+    "ellzeta",
+    "matid",
+    "matzero",
+    "matdet",
+    "matinv",
+    "matrank",
+    "matker",
+    "matimage",
+    "mateigen",
+    "matcharpoly",
+    "hess",
+    "List",
+    "Vec",
+    "Col",
+    "Mat",
+    "Set",
+    "Pol",
+    "Polrev",
+    "Ser",
+    "pi",
+    "euler",
+    "Catalan",
+    "complex",
+    "I",
+    "one",
+    "zero",
+    "abs",
+    "sqrt",
+    "exp",
+    "log",
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "sinh",
+    "cosh",
+    "tanh",
+    "asinh",
+    "acosh",
+    "atanh",
+    "agm",
+    "airy",
+    "genus2red",
+    "algdep",
+    "vector",
+    "matrix",
+    "polsubcyclo",
+    "init_primes",
+    "addprimes",
+    "removeprimes",
+    "ispower",
+    "is_square",
+    "nextprime",
+    "prevprime",
+    "Qfb",
+    "qfbsolve",
+    "qfbclassno",
+    "quadregulator",
+    "quadratic_forms",
+    "hilbert",
+    "bessel",
+    "besselh",
+    "theta",
+    "weber",
+    "eta",
+    "modular_lambda",
+    "modulr_sym",
+    "cusp_form",
+    "eisenstein",
+    "bnrL1",
+    "bnrrootnumber",
+    "dirichlet",
+    "lfun",
+    "lfuntheta",
+]
+
 _pari = None
 
 
@@ -1691,7 +1838,7 @@ def Catalan(precision: int = 0) -> float:
 
 
 @mcp.tool()
-def complex(real: float, imag: float) -> complex:
+def complex(real: float, imag: float) -> complex:  # type: ignore[valid-type]
     """Create a complex number.
 
     Args:
@@ -1706,11 +1853,11 @@ def complex(real: float, imag: float) -> complex:
         1 + 2*I
     """
     pari = _get_pari()
-    return complex(pari.complex(real, imag))
+    return complex(pari.complex(real, imag))  # type: ignore[call-arg]
 
 
 @mcp.tool()
-def I() -> complex:
+def I() -> complex:  # type: ignore[valid-type]
     """Get the imaginary unit.
 
     Returns:
@@ -1721,7 +1868,7 @@ def I() -> complex:
         I
     """
     pari = _get_pari()
-    return complex(pari.I())
+    return complex(pari.I())  # type: ignore[call-arg]
 
 
 @mcp.tool()

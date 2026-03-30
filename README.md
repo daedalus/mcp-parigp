@@ -112,5 +112,5 @@ ruff format src/ tests/
 ruff check src/ tests/
 
 # type check
-mypysrc/
+mypy src/
 ```

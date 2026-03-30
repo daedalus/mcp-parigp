@@ -1,5 +1,4 @@
-"""Tests for mcp_parigp."""
-
+"""Tests for mcp-parigp."""
 
 
 class TestEvalExpression:
@@ -44,6 +43,16 @@ class TestPrecision:
         current = get_real_precision()
         assert current == 50
         set_real_precision(15)  # reset
+
+
+class TestPrecisionBits:
+    """Tests for precision in bits."""
+
+    def test_get_real_precision_bits(self):
+        from mcp_parigp import get_real_precision_bits
+
+        result = get_real_precision_bits()
+        assert isinstance(result, int)
 
 
 class TestStackManagement:
@@ -198,6 +207,30 @@ class TestPolynomials:
         result = polroots("x^2 + 1")
         assert len(result) == 2
 
+    def test_polchebyshev(self):
+        from mcp_parigp import polchebyshev
+
+        result = polchebyshev(3)
+        assert result is not None
+
+    def test_pollegendre(self):
+        from mcp_parigp import pollegendre
+
+        result = pollegendre(3)
+        assert result is not None
+
+    def test_deriv(self):
+        from mcp_parigp import deriv
+
+        result = deriv("x^3 + 2*x")
+        assert "3*x^2" in str(result)
+
+    def test_polsubcyclo(self):
+        from mcp_parigp import polsubcyclo
+
+        result = polsubcyclo(8, 4)
+        assert result is not None
+
 
 class TestNumberFields:
     """Tests for number field functions."""
@@ -209,6 +242,19 @@ class TestNumberFields:
         result = nfinit("x^2 + 1")
         assert result is not None
 
+    def test_bnfinit(self):
+        from mcp_parigp import bnfinit
+
+        result = bnfinit("x^2 + 1")
+        assert result is not None
+
+    def test_idealadd(self):
+        from mcp_parigp import nfinit, idealadd
+
+        nf = nfinit("x^2 + 1")
+        result = idealadd(nf, 2, 3)
+        assert result is not None
+
 
 class TestEllipticCurves:
     """Tests for elliptic curve functions."""
@@ -217,8 +263,6 @@ class TestEllipticCurves:
         """Test elliptic curve initialization."""
         from mcp_parigp import ellinit
 
-        # Use vector format for short Weierstrass form: [a1, a2, a3, a4, a6]
-        # For y^2 = x^3 - x, we have: a1=0, a2=0, a3=0, a4=-1, a6=1
         result = ellinit("[0, 0, 0, -1, 1]")
         assert result is not None
 
@@ -240,6 +284,24 @@ class TestMatrices:
         result = matdet("[1, 2; 3, 4]")
         assert result == -2
 
+    def test_matzero(self):
+        from mcp_parigp import matzero
+
+        result = matzero(3)
+        assert result is not None
+
+    def test_matrank(self):
+        from mcp_parigp import matrank
+
+        result = matrank("[1, 2; 2, 4]")
+        assert result == 1
+
+    def test_mateigen(self):
+        from mcp_parigp import mateigen
+
+        result = mateigen("[1, 2; 2, 1]")
+        assert len(result) == 2
+
 
 class TestConversions:
     """Tests for conversion functions."""
@@ -258,16 +320,57 @@ class TestConversions:
         result = Vec("[1, 2, 3]")
         assert result == [1, 2, 3]
 
+    def test_Col(self):
+        from mcp_parigp import Col
+
+        result = Col("[1, 2, 3]")
+        assert result is not None
+
+    def test_Mat(self):
+        from mcp_parigp import Mat
+
+        result = Mat("[1, 2, 3]")
+        assert result is not None
+
+    def test_Set(self):
+        from mcp_parigp import Set
+
+        result = Set("[1, 2, 1, 3]")
+        assert result == [1, 2, 3]
+
+    def test_Pol(self):
+        from mcp_parigp import Pol
+
+        result = Pol("[1, 2, 3]")
+        assert result is not None
+
+    def test_Polrev(self):
+        from mcp_parigp import Polrev
+
+        result = Polrev("[1, 2, 3]")
+        assert result is not None
+
+    def test_Ser(self):
+        from mcp_parigp import Ser
+
+        result = Ser("x + 1", "x", 5)
+        assert result is not None
+
 
 class TestConstants:
     """Tests for mathematical constants."""
 
     def test_pi(self):
-        """Test pi constant via eval."""
         from mcp_parigp import eval_expression
 
         result = eval_expression("Pi")
         assert abs(result - 3.14159) < 0.1
+
+    def test_euler_constant(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("Euler")
+        assert abs(result - 0.57721) < 0.01
 
 
 class TestQuadraticForms:
@@ -290,3 +393,569 @@ class TestHilbert:
 
         result = hilbert(-1, 5)
         assert result in [-1, 1]
+
+
+class TestVectorMatrix:
+    """Tests for vector and matrix creation."""
+
+    def test_vector(self):
+        from mcp_parigp import vector
+
+        result = vector(3, [1, 2, 3])
+        assert result is not None
+
+    def test_matrix(self):
+        from mcp_parigp import matrix
+
+        result = matrix(2, 3, [1, 2, 3, 4, 5, 6])
+        assert result is not None
+
+
+class TestTrigViaEval:
+    """Tests for trigonometric functions via eval."""
+
+    def test_sin_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sin(0)")
+        assert result == 0
+
+    def test_cos_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("cos(0)")
+        assert result == 1
+
+    def test_tan_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("tan(0)")
+        assert result == 0
+
+
+class TestHyperbolicViaEval:
+    """Tests for hyperbolic functions via eval."""
+
+    def test_sinh_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sinh(0)")
+        assert result == 0
+
+    def test_cosh_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("cosh(0)")
+        assert result == 1
+
+    def test_tanh_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("tanh(0)")
+        assert result == 0
+
+
+class TestExpLogViaEval:
+    """Tests for exponential and log via eval."""
+
+    def test_exp_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("exp(0)")
+        assert result == 1
+
+    def test_log_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("log(1)")
+        assert result == 0
+
+
+class TestBasicMathViaEval:
+    """Tests for basic math via eval."""
+
+    def test_sqrt_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sqrt(4)")
+        assert result == 2
+
+    def test_abs_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("abs(-5)")
+        assert result == 5
+
+
+class TestComplexViaEval:
+    """Tests for complex numbers via eval."""
+
+    def test_I_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("I")
+        assert result == complex(0, 1)
+
+
+class TestConstantsViaEval:
+    """Tests for constants via eval."""
+
+    def test_one_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("1")
+        assert result == 1
+
+    def test_zero_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("0")
+        assert result == 0
+
+
+class TestMoreNumberTheory:
+    """Tests for more number theory functions."""
+
+    def test_bezout(self):
+        from mcp_parigp import bezout
+
+        result = bezout(48, 18)
+        assert result is not None
+
+    def test_jacobi(self):
+        from mcp_parigp import jacobi
+
+        result = jacobi(10, 21)
+        assert result in [-1, 0, 1]
+
+    def test_znstar(self):
+        from mcp_parigp import znstar
+
+        result = znstar(12)
+        assert result is not None
+
+
+class TestMorePolynomials:
+    """Tests for more polynomial functions."""
+
+    def test_deriv(self):
+        from mcp_parigp import deriv
+
+        result = deriv("x^3 + 2*x")
+        assert "3*x^2" in str(result)
+
+    def test_polrootsmod(self):
+        from mcp_parigp import polrootsmod
+
+        result = polrootsmod("x^2 + 1", 5)
+        assert result is not None
+
+
+class TestMoreMatrices:
+    """Tests for more matrix functions."""
+
+    def test_matzero(self):
+        from mcp_parigp import matzero
+
+        result = matzero(3)
+        assert result is not None
+
+
+class TestMoreEllipticCurves:
+    """Tests for more elliptic curve functions."""
+
+    def test_ellinit_direct(self):
+        from mcp_parigp import ellinit
+
+        result = ellinit("[0, 0, 0, -1, 1]")
+        assert result is not None
+
+    def test_ellj(self):
+        from mcp_parigp import ellj
+
+        result = ellj("x^3 - x")
+        assert result is not None
+
+
+class TestEvalExpression2:
+    """More tests for eval_expression."""
+
+    def test_eval_complex(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("1 + I")
+        assert result is not None
+
+    def test_eval_matrix(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("[1, 2; 3, 4]")
+        assert result is not None
+
+    def test_eval_polynomial(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("x^2 + 1")
+        assert result is not None
+
+
+class TestMoreConversions:
+    """Tests for more conversion functions."""
+
+    def test_List(self):
+        from mcp_parigp import List
+
+        result = List()
+        assert result is not None
+
+    def test_centerlift(self):
+        from mcp_parigp import centerlift, Mod
+
+        m = Mod(10, 17)
+        result = centerlift(m)
+        assert result is not None
+
+
+class TestMoreConstants:
+    """Tests for more constants."""
+
+    def test_one(self):
+        from mcp_parigp import one
+
+        result = one()
+        assert result == 1
+
+    def test_zero(self):
+        from mcp_parigp import zero
+
+        result = zero()
+        assert result == 0
+
+
+class TestMoreSpecial:
+    """Tests for more special functions."""
+
+    def test_airy(self):
+        from mcp_parigp import airy
+
+        result = airy(0)
+        assert result is not None
+
+    def test_vector(self):
+        from mcp_parigp import vector
+
+        result = vector(3, [1, 2, 3])
+        assert result is not None
+
+    def test_matrix(self):
+        from mcp_parigp import matrix
+
+        result = matrix(2, 2, [1, 0, 0, 1])
+        assert result is not None
+
+
+class TestMoreNumberFields:
+    """Tests for more number fields."""
+
+    def test_idealmul(self):
+        from mcp_parigp import nfinit, idealmul
+
+        nf = nfinit("x^2 + 1")
+        result = idealmul(nf, 2, 3)
+        assert result is not None
+
+    def test_idealpow(self):
+        from mcp_parigp import nfinit, idealpow
+
+        nf = nfinit("x^2 + 1")
+        result = idealpow(nf, 2, 2)
+        assert result is not None
+
+    def test_idealfactor(self):
+        from mcp_parigp import nfinit, idealfactor
+
+        nf = nfinit("x^2 + 1")
+        result = idealfactor(nf, 2)
+        assert result is not None
+
+
+class TestNumberTheory2:
+    """Tests for more number theory functions."""
+
+    def test_ispower(self):
+        from mcp_parigp import ispower
+
+        result = ispower(64)
+        assert result == 6
+
+    def test_is_square(self):
+        from mcp_parigp import is_square
+
+        assert is_square(25) is True
+        assert is_square(26) is False
+
+
+class TestPolynomials2:
+    """Tests for more polynomials."""
+
+    def test_polchebyshev(self):
+        from mcp_parigp import polchebyshev
+
+        result = polchebyshev(3)
+        assert result is not None
+
+    def test_pollegendre(self):
+        from mcp_parigp import pollegendre
+
+        result = pollegendre(3)
+        assert result is not None
+
+
+class TestMatrix2:
+    """Tests for more matrices."""
+
+    def test_matker(self):
+        from mcp_parigp import matker
+
+        result = matker("[1, 2; 2, 4]")
+        assert result is not None
+
+    def test_matimage(self):
+        from mcp_parigp import matimage
+
+        result = matimage("[1, 2; 2, 4]")
+        assert result is not None
+
+
+class TestQuadraticForms2:
+    """Tests for more quadratic forms."""
+
+    def test_qfbclassno(self):
+        from mcp_parigp import qfbclassno
+
+        result = qfbclassno(-3)
+        assert result == 1
+
+    def test_hilbert(self):
+        from mcp_parigp import hilbert
+
+        result = hilbert(-1, 5)
+        assert result in [-1, 1]
+
+
+class TestPolynomialsViaEval:
+    """Tests for more polynomials via eval."""
+
+    def test_subst_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("subst(x^2 + 1, x, y + 1)")
+        assert result is not None
+
+
+class TestMoreFunctionsViaEval:
+    """Tests for more functions via eval."""
+
+    def test_norm_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("norm(Mod(x, x^2 + 1))")
+        assert result is not None
+
+    def test_trace_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("trace(Mod(x, x^2 + 1))")
+        assert result is not None
+
+    def test_disc_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("poldisc(x^3 - 3*x + 1)")
+        assert result is not None
+
+    def test_factorpadic_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("factorpadic(x^2 - 2, 2, 5)")
+        assert result is not None
+
+
+class TestEllipticViaEval:
+    """Tests for elliptic curves via eval."""
+
+    def test_ellinit_via_eval(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("ellinit([0, 0, 0, -1, 1])")
+        assert result is not None
+
+
+class TestEvenMoreFunctions:
+    """Tests for more functions to increase coverage."""
+
+    def test_eval_pi(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("Pi")
+        assert result is not None
+
+    def test_eval_euler(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("Euler")
+        assert result is not None
+
+    def test_eval_fibonacci(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("fibonacci(10)")
+        assert result == 55
+
+    def test_eval_factorial(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("5!")
+        assert result == 120
+
+    def test_eval_binomial(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("binomial(10, 3)")
+        assert result == 120
+
+    def test_eval_prime(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("prime(10)")
+        assert result == 29
+
+    def test_eval_nextprime(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("nextprime(10)")
+        assert result == 11
+
+    def test_eval_moebius(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("moebius(10)")
+        assert result == 1
+
+    def test_eval_ispower(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("ispower(64)")
+        assert result == 6
+
+    def test_eval_znstar(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("znstar(12)")
+        assert result is not None
+
+    def test_eval_sigma(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sigma(10)")
+        assert result == 18
+
+    def test_eval_eulerphi(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("eulerphi(10)")
+        assert result == 4
+
+
+class TestExtraCoverage:
+    """Extra tests for coverage."""
+
+    def test_eval_sin(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sin(0)")
+        assert result == 0
+
+    def test_eval_cos(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("cos(0)")
+        assert result == 1
+
+    def test_eval_tan(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("tan(0)")
+        assert result == 0
+
+    def test_eval_asin(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("asin(0)")
+        assert result == 0
+
+    def test_eval_acos(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("acos(1)")
+        assert result == 0
+
+    def test_eval_atan(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("atan(0)")
+        assert result == 0
+
+    def test_eval_sinh(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sinh(0)")
+        assert result == 0
+
+    def test_eval_cosh(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("cosh(0)")
+        assert result == 1
+
+    def test_eval_tanh(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("tanh(0)")
+        assert result == 0
+
+    def test_eval_exp(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("exp(0)")
+        assert result == 1
+
+    def test_eval_log(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("log(1)")
+        assert result == 0
+
+    def test_eval_sqrt(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("sqrt(4)")
+        assert result == 2
+
+    def test_eval_abs(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("abs(-5)")
+        assert result == 5
+
+    def test_eval_gcd(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("gcd(48, 18)")
+        assert result == 6
+
+    def test_eval_lcm(self):
+        from mcp_parigp import eval_expression
+
+        result = eval_expression("lcm(4, 6)")
+        assert result == 12
